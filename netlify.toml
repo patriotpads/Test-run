@@ -5,10 +5,32 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Handle SPA routing - redirect all non-file requests to index.html
+[[redirects]]
+  from = "/property/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/listings"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to = "/index.html"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
 
 [[headers]]
   for = "/static/*"
