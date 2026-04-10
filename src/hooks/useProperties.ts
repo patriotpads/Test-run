@@ -39,8 +39,8 @@ export function useProperties() {
           bedrooms: property.bedrooms,
           bathrooms: property.bathrooms,
           maxGuests: property.max_guests,
-          rating: 4.8, // Default rating for now
-          reviewCount: 24, // Default review count for now
+          rating: 4.8,
+          reviewCount: 24,
           images: property.images || [],
           featured: property.featured,
           details: property.details,
@@ -48,7 +48,6 @@ export function useProperties() {
           amenities: property.property_amenities?.map((pa: any) => pa.amenities) || [],
         }));
       } catch (error) {
-        // Fallback to local static data
         console.warn('Supabase fetch failed, using local data:', error);
         
         return properties.map(property => ({
@@ -75,11 +74,10 @@ export function useProperties() {
       }
     },
     retry: (failureCount, error) => {
-      // Only retry on network errors
       return failureCount < 2;
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }

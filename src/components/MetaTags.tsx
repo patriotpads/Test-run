@@ -17,18 +17,23 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
   useEffect(() => {
     const baseUrl = window.location.origin;
     
-    // Default fallback image
     const defaultImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=630&fit=crop&crop=center';
     
     const title = property ? `${property.title} - PatriotPads` : 'PatriotPads - Perfect Getaways';
     const description = property ? property.description : 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma.';
-    const image = property && property.images[0] ? property.images[0] : defaultImage;
+    
+    const getSocialImage = (imageUrl: string) => {
+      if (imageUrl.includes('unsplash.com')) {
+        return imageUrl.replace(/w=\d+/, 'w=1200&h=630&fit=crop');
+      }
+      return imageUrl;
+    };
+    
+    const image = property && property.images[0] ? getSocialImage(property.images[0]) : defaultImage;
     const url = window.location.href;
 
-    // Update document title
     document.title = title;
 
-    // Update or create meta tags
     const updateMetaTag = (name: string, content: string) => {
       let tag = document.querySelector(`meta[name="${name}"]`) || 
                 document.querySelector(`meta[property="${name}"]`);
@@ -41,10 +46,7 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
       tag.setAttribute('content', content);
     };
 
-    // Essential meta tags
     updateMetaTag('description', description);
-    
-    // Open Graph tags
     updateMetaTag('og:title', title);
     updateMetaTag('og:description', description);
     updateMetaTag('og:image', image);
@@ -54,20 +56,15 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
     updateMetaTag('og:url', url);
     updateMetaTag('og:type', 'website');
     updateMetaTag('og:site_name', 'PatriotPads');
-    
-    // Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image');
     updateMetaTag('twitter:title', title);
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', image);
     updateMetaTag('twitter:image:alt', property?.title || 'PatriotPads Property');
     updateMetaTag('twitter:site', '@PatriotPads');
-    
-    // Additional meta tags
     updateMetaTag('robots', 'index, follow');
     updateMetaTag('author', 'PatriotPads');
 
-    // Cleanup function
     return () => {
       document.title = 'PatriotPads';
     };

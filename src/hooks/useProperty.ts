@@ -9,7 +9,6 @@ export function useProperty(id: string | undefined) {
     queryFn: async () => {
       if (!id) return null;
       
-      // Always have a fallback ready for production
       const getFallbackProperty = () => {
         const numericId = parseInt(id);
         let localProperty;
@@ -17,9 +16,8 @@ export function useProperty(id: string | undefined) {
         if (!isNaN(numericId)) {
           localProperty = getPropertyById(numericId);
         } else {
-          // UUID fallback - map to a local property for demo purposes
           const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const mappedId = (hash % 20) + 1; // Map to 1-20 (our local properties)
+          const mappedId = (hash % 20) + 1;
           localProperty = getPropertyById(mappedId);
           console.log(`Mapped UUID ${id} to local property ID ${mappedId}`);
         }
@@ -49,7 +47,6 @@ export function useProperty(id: string | undefined) {
       };
       
       try {
-        // Try to fetch from Supabase first with timeout wrapper
         const fetchWithTimeout = async () => {
           const { data, error } = await Promise.race([
             supabase
@@ -93,8 +90,8 @@ export function useProperty(id: string | undefined) {
           bedrooms: data.bedrooms,
           bathrooms: data.bathrooms,
           maxGuests: data.max_guests,
-          rating: 4.8, // Default/fake rating for now
-          reviewCount: 24, // Default/fake review count for now
+          rating: 4.8,
+          reviewCount: 24,
           images: data.images || [],
           featured: data.featured,
           description: data.details,
@@ -102,21 +99,19 @@ export function useProperty(id: string | undefined) {
           amenities: data.property_amenities?.map((pa: any) => pa.amenities) || [],
         };
       } catch (error) {
-        // Fallback to local static data
         console.warn('Supabase fetch failed, using local data:', error);
         return getFallbackProperty();
       }
     },
     enabled: !!id,
     retry: (failureCount, error) => {
-      // Only retry on network errors, not on 404s or validation errors
       if (error instanceof Error && error.message.includes('not found')) {
         return false;
       }
-      return failureCount < 2; // Max 2 retries
+      return failureCount < 2;
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
