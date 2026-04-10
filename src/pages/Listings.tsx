@@ -8,6 +8,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Search, Filter } from 'lucide-react';
 import { useProperties } from '@/hooks/useProperties';
+import { DefaultMetaTags } from '@/components/DefaultMetaTags';
 
 const Listings: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,6 +38,10 @@ const Listings: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <DefaultMetaTags 
+        title="Vacation Rentals - PatriotPads"
+        description="Browse our collection of premium vacation rentals in California, Florida, and Oklahoma. Find your perfect getaway."
+      />
       <Navbar />
       
       <main className="pt-20">

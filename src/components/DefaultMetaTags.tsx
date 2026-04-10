@@ -1,28 +1,19 @@
 import React, { useEffect } from 'react';
 
-interface PropertyMetaTagsProps {
-  property?: {
-    title: string;
-    description: string;
-    location: {
-      city: string;
-      state: string;
-    };
-    images: string[];
-    price: number;
-  };
+interface DefaultMetaTagsProps {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: string;
 }
 
-export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) => {
+export const DefaultMetaTags: React.FC<DefaultMetaTagsProps> = ({ 
+  title = 'PatriotPads - Perfect Getaways',
+  description = 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma.',
+  image = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=630&fit=crop&crop=center',
+  type = 'website'
+}) => {
   useEffect(() => {
-    const baseUrl = window.location.origin;
-    
-    // Default fallback image
-    const defaultImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=630&fit=crop&crop=center';
-    
-    const title = property ? `${property.title} - PatriotPads` : 'PatriotPads - Perfect Getaways';
-    const description = property ? property.description : 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma.';
-    const image = property && property.images[0] ? property.images[0] : defaultImage;
     const url = window.location.href;
 
     // Update document title
@@ -50,9 +41,9 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
     updateMetaTag('og:image', image);
     updateMetaTag('og:image:width', '1200');
     updateMetaTag('og:image:height', '630');
-    updateMetaTag('og:image:alt', property?.title || 'PatriotPads Property');
+    updateMetaTag('og:image:alt', 'PatriotPads - Vacation Rentals');
     updateMetaTag('og:url', url);
-    updateMetaTag('og:type', 'website');
+    updateMetaTag('og:type', type);
     updateMetaTag('og:site_name', 'PatriotPads');
     
     // Twitter Card tags
@@ -60,18 +51,14 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
     updateMetaTag('twitter:title', title);
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', image);
-    updateMetaTag('twitter:image:alt', property?.title || 'PatriotPads Property');
+    updateMetaTag('twitter:image:alt', 'PatriotPads - Vacation Rentals');
     updateMetaTag('twitter:site', '@PatriotPads');
     
     // Additional meta tags
     updateMetaTag('robots', 'index, follow');
     updateMetaTag('author', 'PatriotPads');
 
-    // Cleanup function
-    return () => {
-      document.title = 'PatriotPads';
-    };
-  }, [property]);
+  }, [title, description, image, type]);
 
   return null;
 };

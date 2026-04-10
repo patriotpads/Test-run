@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { DefaultMetaTags } from '@/components/DefaultMetaTags';
 
 const Index = () => {
   const destinations = [
@@ -29,6 +30,7 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <DefaultMetaTags />
       <Navbar />
       <main className="flex-grow">
         <Hero />
