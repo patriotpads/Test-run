@@ -1,5 +1,5 @@
-import React from 'react';
-import { Facebook, Twitter, Linkedin, Link2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Facebook, Twitter, Linkedin, Link2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface SocialShareProps {
@@ -14,6 +14,8 @@ interface SocialShareProps {
 }
 
 export const SocialShare: React.FC<SocialShareProps> = ({ property }) => {
+  const [copied, setCopied] = useState(false);
+  
   if (!property) return null;
 
   const url = window.location.href;
@@ -29,7 +31,8 @@ export const SocialShare: React.FC<SocialShareProps> = ({ property }) => {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      // You could add a toast notification here
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
       console.error('Failed to copy link:', err);
     }
@@ -65,9 +68,19 @@ export const SocialShare: React.FC<SocialShareProps> = ({ property }) => {
         variant="outline"
         size="sm"
         onClick={copyToClipboard}
+        className={`transition-all duration-300 ${copied ? 'bg-green-50 border-green-200 text-green-700' : ''}`}
       >
-        <Link2 className="h-4 w-4 mr-2" />
-        Copy Link
+        {copied ? (
+          <>
+            <Check className="h-4 w-4 mr-2" />
+            Link Copied!
+          </>
+        ) : (
+          <>
+            <Link2 className="h-4 w-4 mr-2" />
+            Copy Link
+          </>
+        )}
       </Button>
     </div>
   );
