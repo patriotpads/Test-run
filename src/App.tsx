@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { AdminAuthProvider } from "@/hooks/useAdminAuth";
 import Index from "./pages/Index";
 import Listings from "./pages/Listings";
@@ -17,12 +18,13 @@ import About from "./pages/About";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AdminAuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AdminAuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
@@ -43,9 +45,10 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </AdminAuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+        </AdminAuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

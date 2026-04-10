@@ -49,29 +49,34 @@ export function useProperty(id: string | undefined) {
       };
       
       try {
-        // Try to fetch from Supabase first with timeout
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Supabase timeout')), 5000) // 5 second timeout
-        );
-        
-        const supabasePromise = supabase
-          .from('properties')
-          .select(`
-            *,
-            property_amenities (
-              amenity_id,
-              amenities (
-                id,
-                name,
-                icon,
-                category
-              )
+        // Try to fetch from Supabase first with timeout wrapper
+        const fetchWithTimeout = async () => {
+          const { data, error } = await Promise.race([
+            supabase
+              .from('properties')
+              .select(`
+                *,
+                property_amenities (
+                  amenity_id,
+                  amenities (
+                    id,
+                    name,
+                    icon,
+                    category
+                  )
+                )
+              `)
+              .eq('id', id)
+              .maybeSingle(),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Supabase timeout')), 5000)
             )
-          `)
-          .eq('id', id)
-          .maybeSingle();
+          ]) as any;
+          
+          return { data, error };
+        };
 
-        const { data, error } = await Promise.race([supabasePromise, timeoutPromise]) as any;
+        const { data, error } = await fetchWithTimeout();
 
         if (error) throw error;
         if (!data) throw new Error('Property not found in database');
@@ -103,5 +108,15 @@ export function useProperty(id: string | undefined) {
       }
     },
     enabled: !!id,
+    retry: (failureCount, error) => {
+      // Only retry on network errors, not on 404s or validation errors
+      if (error instanceof Error && error.message.includes('not found')) {
+        return false;
+      }
+      return failureCount < 2; // Max 2 retries
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }
