@@ -54,7 +54,15 @@ export function useProperty(id: string | undefined) {
       } catch (error) {
         // Fallback to local static data
         console.warn('Supabase fetch failed, using local data:', error);
-        const localProperty = getPropertyById(parseInt(id));
+        
+        // Try to parse as integer first, if that fails, we can't use local data
+        const numericId = parseInt(id);
+        if (isNaN(numericId)) {
+          console.warn('Cannot map UUID to local numeric ID, local data unavailable');
+          return null;
+        }
+        
+        const localProperty = getPropertyById(numericId);
         
         if (!localProperty) return null;
         

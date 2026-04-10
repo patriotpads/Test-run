@@ -34,8 +34,17 @@ const PropertyDetails = () => {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="container mx-auto py-16 flex-grow flex flex-col items-center justify-center">
-          <h1 className="heading-lg mb-4">Property Not Found</h1>
-          <p className="mb-6">We couldn't find the property you're looking for.</p>
+          <h1 className="heading-lg mb-4">Property Not Available</h1>
+          <p className="mb-6">This property is currently unavailable or may have been removed.</p>
+          <div className="text-center mb-6">
+            <p className="text-sm text-muted-foreground mb-2">
+              If you're seeing this message for a property that should exist, 
+              our database may be temporarily unavailable.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Please try again later or browse our available properties below.
+            </p>
+          </div>
           <Button onClick={() => navigate('/listings')}>Browse All Properties</Button>
         </div>
         <Footer />
