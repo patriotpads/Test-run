@@ -53,53 +53,77 @@ export function useProperty(slugOrId: string | undefined) {
       
       try {
         const fetchWithTimeout = async () => {
-          // First try to fetch by slug (new approach)
-          let query = supabase
-            .from('properties')
-            .select(`
-              *,
-              property_amenities (
-                amenity_id,
-                amenities (
-                  id,
-                  name,
-                  icon,
-                  category
-                )
-              )
-            `);
-
-          // If it's a UUID, try fetching by id first (for backward compatibility)
+          // If it's a UUID, fetch directly (for backward compatibility)
           if (isUuid) {
-            query = query.eq('id', slugOrId);
-          } else {
-            query = query.eq('slug', slugOrId);
+            const { data, error } = await Promise.race([
+              supabase
+                .from('properties')
+                .select(`
+                  *,
+                  property_amenities (
+                    amenity_id,
+                    amenities (
+                      id,
+                      name,
+                      icon,
+                      category
+                    )
+                  )
+                `)
+                .eq('id', slugOrId)
+                .maybeSingle(),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Supabase timeout')), 5000)
+              )
+            ]) as any;
+            
+            return { data, error };
           }
-
-          const { data, error } = await Promise.race([
-            query.maybeSingle(),
+          
+          // For slugs, fetch all properties and find matching one by slug
+          const { data: allProperties, error } = await Promise.race([
+            supabase
+              .from('properties')
+              .select(`
+                *,
+                property_amenities (
+                  amenity_id,
+                  amenities (
+                    id,
+                    name,
+                    icon,
+                    category
+                  )
+                )
+              `),
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Supabase timeout')), 5000)
             )
           ]) as any;
           
-          return { data, error };
+          if (error) return { data: null, error };
+          
+          // Find property by matching generated slug
+          const matchingProperty = allProperties?.find((property: any) => {
+            const propertySlug = generateSlug(property.title);
+            return propertySlug === slugOrId;
+          });
+          
+          return { data: matchingProperty, error: null };
         };
 
         const { data, error } = await fetchWithTimeout();
 
         if (error) throw error;
         if (!data) {
-          // If slug lookup failed and it's a UUID, it might be an old link
-          if (isUuid) {
-            throw new Error('UUID_REDIRECT_NEEDED');
-          }
           throw new Error('Property not found in database');
         }
 
+        const propertySlug = generateSlug(data.title);
+        
         return {
           id: data.id,
-          slug: data.slug,
+          slug: propertySlug,
           title: data.title,
           location: {
             city: data.location_city,
@@ -118,18 +142,14 @@ export function useProperty(slugOrId: string | undefined) {
           highlights: data.property_highlights,
           amenities: data.property_amenities?.map((pa: any) => pa.amenities) || [],
         };
-      } catch (error: any) {
-        if (error.message === 'UUID_REDIRECT_NEEDED') {
-          // Special error to indicate UUID needs redirection
-          throw error;
-        }
+      } catch (error) {
         console.warn('Supabase fetch failed, using local data:', error);
         return getFallbackProperty();
       }
     },
     enabled: !!slugOrId,
     retry: (failureCount, error) => {
-      if (error instanceof Error && (error.message.includes('not found') || error.message === 'UUID_REDIRECT_NEEDED')) {
+      if (error instanceof Error && error.message.includes('not found')) {
         return false;
       }
       return failureCount < 2;

@@ -1,3 +1,5 @@
+import { generateSlug } from '@/utils/slug';
+
 export interface Property {
   id: number;
   title: string;
@@ -15,6 +17,7 @@ export interface Property {
   description: string;
   images: string[];
   featured?: boolean;
+  slug?: string;
 }
 
 export const properties: Property[] = [
@@ -37,7 +40,8 @@ export const properties: Property[] = [
       "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=800&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&auto=format&fit=crop",
     ],
-    featured: true
+    featured: true,
+    slug: generateSlug("Luxury Beach House")
   },
   {
     id: 2,
@@ -57,7 +61,8 @@ export const properties: Property[] = [
     images: [
       "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&auto=format&fit=crop",
-    ]
+    ],
+    slug: generateSlug("Mountain Cabin Retreat")
   },
   {
     id: 3,

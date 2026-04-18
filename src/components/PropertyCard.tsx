@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { generateSlug } from '@/utils/slug';
 
 interface PropertyCardProps {
   property: {
@@ -26,8 +27,11 @@ interface PropertyCardProps {
 const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const { id, title, location, price, bedrooms, bathrooms, rating, reviewCount, images, featured } = property;
   
+  // Generate slug for SEO-friendly URLs
+  const slug = generateSlug(title);
+  
   return (
-    <Link to={`/property/${id}`}>
+    <Link to={`/property/${slug}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
         <div className="aspect-[4/3] relative">
           <img 
