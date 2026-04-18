@@ -10,11 +10,15 @@ interface DefaultMetaTagsProps {
 export const DefaultMetaTags: React.FC<DefaultMetaTagsProps> = ({ 
   title = 'PatriotPads - Perfect Getaways',
   description = 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma.',
-  image = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=630&fit=crop&crop=center',
+  image,
   type = 'website'
 }) => {
   useEffect(() => {
+    // Check if window.location is available (build-time safety)
+    if (typeof window === 'undefined') return;
+    
     const url = window.location.href;
+    const dynamicImage = image || `${window.location.origin}/logo.png`;
 
     // Update document title
     document.title = title;
@@ -38,7 +42,7 @@ export const DefaultMetaTags: React.FC<DefaultMetaTagsProps> = ({
     // Open Graph tags
     updateMetaTag('og:title', title);
     updateMetaTag('og:description', description);
-    updateMetaTag('og:image', image);
+    updateMetaTag('og:image', dynamicImage);
     updateMetaTag('og:image:width', '1200');
     updateMetaTag('og:image:height', '630');
     updateMetaTag('og:image:alt', 'PatriotPads - Vacation Rentals');
@@ -50,7 +54,7 @@ export const DefaultMetaTags: React.FC<DefaultMetaTagsProps> = ({
     updateMetaTag('twitter:card', 'summary_large_image');
     updateMetaTag('twitter:title', title);
     updateMetaTag('twitter:description', description);
-    updateMetaTag('twitter:image', image);
+    updateMetaTag('twitter:image', dynamicImage);
     updateMetaTag('twitter:image:alt', 'PatriotPads - Vacation Rentals');
     updateMetaTag('twitter:site', '@PatriotPads');
     

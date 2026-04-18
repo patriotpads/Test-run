@@ -15,29 +15,50 @@ interface PropertyMetaTagsProps {
 
 export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) => {
   useEffect(() => {
-    const baseUrl = window.location.origin;
+    // Check if window.location is available (build-time safety)
+    if (typeof window === 'undefined') return;
     
+    const baseUrl = window.location.origin;
     const defaultImage = `${window.location.origin}/logo.png`;
     
-    const title = property ? `${property.title} - PatriotPads - Premium Vacation Rentals` : 'PatriotPads - Perfect Getaways - Premium Vacation Rentals in California, Florida, and Oklahoma';
-    const description = property ? `${property.description} Experience luxury and comfort with PatriotPads premium vacation rentals. Book your perfect getaway today!` : 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma. Experience luxury and comfort with our handpicked vacation rentals.';
+    const title = property ? `${property.title} - PatriotPads` : 'PatriotPads - Perfect Getaways';
+    const description = property ? property.description : 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma.';
     
     const getSocialImage = (imageUrl: string) => {
-      // Handle local images (like logo.png)
-      if (imageUrl.startsWith('/')) {
-        return `${window.location.origin}${imageUrl}`;
-      }
+      // Handle Supabase storage URLs and other image sources
       if (imageUrl.includes('unsplash.com')) {
         return imageUrl.replace(/w=\d+/, 'w=1200&h=630&fit=crop');
       }
+      
+      // Handle Supabase storage URLs - ensure they're public and absolute
+      if (imageUrl.includes('supabase.co/storage/v1')) {
+        return imageUrl;
+      }
+      
+      // Handle relative paths - make them absolute with dynamic base URL
+      if (imageUrl.startsWith('/')) {
+        return `${baseUrl}${imageUrl}`;
+      }
+      
+      // Handle placeholder images or missing images
+      if (imageUrl.includes('placeholder') || !imageUrl) {
+        return defaultImage;
+      }
+      
       // Ensure HTTPS for all image URLs
       if (imageUrl.startsWith('http://')) {
         return imageUrl.replace('http://', 'https://');
       }
+      
       return imageUrl;
     };
     
-    const image = property && property.images[0] ? getSocialImage(property.images[0]) : defaultImage;
+    // Check if property image exists and is not a placeholder
+    const hasValidImage = property && property.images[0] && 
+                         !property.images[0].includes('placeholder') &&
+                         property.images[0].trim() !== '';
+    
+    const image = hasValidImage ? getSocialImage(property.images[0]) : defaultImage;
     const url = window.location.href;
 
     document.title = title;
