@@ -17,12 +17,16 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
   useEffect(() => {
     const baseUrl = window.location.origin;
     
-    const defaultImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=630&fit=crop&crop=center';
+    const defaultImage = `${window.location.origin}/logo.png`;
     
     const title = property ? `${property.title} - PatriotPads - Premium Vacation Rentals` : 'PatriotPads - Perfect Getaways - Premium Vacation Rentals in California, Florida, and Oklahoma';
     const description = property ? `${property.description} Experience luxury and comfort with PatriotPads premium vacation rentals. Book your perfect getaway today!` : 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma. Experience luxury and comfort with our handpicked vacation rentals.';
     
     const getSocialImage = (imageUrl: string) => {
+      // Handle local images (like logo.png)
+      if (imageUrl.startsWith('/')) {
+        return `${window.location.origin}${imageUrl}`;
+      }
       if (imageUrl.includes('unsplash.com')) {
         return imageUrl.replace(/w=\d+/, 'w=1200&h=630&fit=crop');
       }
