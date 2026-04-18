@@ -13,6 +13,7 @@ import { ImageUploader } from './ImageUploader';
 import { AmenitiesSelector } from './AmenitiesSelector';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { generateSlug, generateUniqueSlug } from '@/utils/slug';
 
 interface PropertyFormProps {
   property?: any;
@@ -88,8 +89,27 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
 
       console.log('User authenticated:', user.id);
 
+      // Generate slug for new properties
+      let slug = property?.slug; // Keep existing slug for updates
+      if (!property) {
+        // Generate slug for new property
+        const baseSlug = generateSlug(data.title);
+        
+        // Get existing slugs to ensure uniqueness
+        const { data: existingProperties } = await supabase
+          .from('properties')
+          .select('slug')
+          .not('slug', 'is', null);
+        
+        const existingSlugs = existingProperties?.map(p => p.slug).filter(Boolean) || [];
+        slug = generateUniqueSlug(baseSlug, existingSlugs, 'new');
+        
+        console.log(`Generated slug: ${slug} for title: ${data.title}`);
+      }
+
       const propertyData = {
         title: data.title,
+        slug: slug,
         max_guests: data.max_guests,
         bedrooms: data.bedrooms,
         bathrooms: data.bathrooms,

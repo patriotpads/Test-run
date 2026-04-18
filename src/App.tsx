@@ -29,7 +29,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/listings" element={<Listings />} />
-            <Route path="/property/:id" element={<PropertyDetails />} />
+            <Route path="/property/:slug" element={<PropertyDetails />} />
             <Route path="/about" element={<About />} />
             
             {/* Admin routes - separate login route */}

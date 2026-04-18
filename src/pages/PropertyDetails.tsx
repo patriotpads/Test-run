@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -12,11 +12,47 @@ import { useProperty } from '@/hooks/useProperty';
 import BookNowDropdown from "@/components/BookNowDropdown";
 import { PropertyMetaTags } from '@/components/MetaTags';
 import { SocialShare } from '@/components/SocialShare';
+import { supabase } from '@/integrations/supabase/client';
+import { generateSlug } from '@/utils/slug';
 
 const PropertyDetails = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { data: property, isLoading, error } = useProperty(id);
+  const { data: property, isLoading, error } = useProperty(slug);
+
+  // Handle UUID redirection
+  useEffect(() => {
+    if (error && error instanceof Error && error.message === 'UUID_REDIRECT_NEEDED') {
+      // Try to find the property by UUID and redirect to its slug
+      const redirectByUuid = async () => {
+        try {
+          const { data: propertyData } = await supabase
+            .from('properties')
+            .select('slug')
+            .eq('id', slug)
+            .single();
+          
+          if (propertyData?.slug) {
+            navigate(`/property/${propertyData.slug}`, { replace: true });
+          } else {
+            // If no slug found, it might be a local property
+            const numericId = parseInt(slug);
+            if (!isNaN(numericId)) {
+              const localProperty = getPropertyById(numericId);
+              if (localProperty) {
+                const generatedSlug = generateSlug(localProperty.title);
+                navigate(`/property/${generatedSlug}`, { replace: true });
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Failed to redirect UUID:', err);
+        }
+      };
+      
+      redirectByUuid();
+    }
+  }, [error, slug, navigate]);
 
   if (isLoading) {
     return (
