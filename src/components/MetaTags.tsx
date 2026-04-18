@@ -19,12 +19,16 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
     
     const defaultImage = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=630&fit=crop&crop=center';
     
-    const title = property ? `${property.title} - PatriotPads` : 'PatriotPads - Perfect Getaways';
-    const description = property ? property.description : 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma.';
+    const title = property ? `${property.title} - PatriotPads - Premium Vacation Rentals` : 'PatriotPads - Perfect Getaways - Premium Vacation Rentals in California, Florida, and Oklahoma';
+    const description = property ? `${property.description} Experience luxury and comfort with PatriotPads premium vacation rentals. Book your perfect getaway today!` : 'Find your perfect vacation rental with PatriotPads. Premium properties in California, Florida, and Oklahoma. Experience luxury and comfort with our handpicked vacation rentals.';
     
     const getSocialImage = (imageUrl: string) => {
       if (imageUrl.includes('unsplash.com')) {
         return imageUrl.replace(/w=\d+/, 'w=1200&h=630&fit=crop');
+      }
+      // Ensure HTTPS for all image URLs
+      if (imageUrl.startsWith('http://')) {
+        return imageUrl.replace('http://', 'https://');
       }
       return imageUrl;
     };
@@ -54,6 +58,7 @@ export const PropertyMetaTags: React.FC<PropertyMetaTagsProps> = ({ property }) 
     updateMetaTag('og:image:height', '630');
     updateMetaTag('og:image:alt', property?.title || 'PatriotPads Property');
     updateMetaTag('og:url', url);
+    updateMetaTag('canonical', url);
     updateMetaTag('og:type', 'website');
     updateMetaTag('og:site_name', 'PatriotPads');
     updateMetaTag('twitter:card', 'summary_large_image');
