@@ -5,12 +5,6 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Production domain settings
-#[[redirects]]
-  from = "https://patriotpadssub.netlify.app/*"
-  to = "https://patriotpads.com/:splat"
-  status = 301
-  force = true
 
 # Handle SPA routing - redirect all non-file requests to index.html
 [[redirects]]
