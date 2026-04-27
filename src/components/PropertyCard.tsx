@@ -8,6 +8,7 @@ import { generateSlug } from '@/utils/slug';
 interface PropertyCardProps {
   property: {
     id: string;
+    slug?: string;
     title: string;
     location: {
       city: string;
@@ -25,13 +26,13 @@ interface PropertyCardProps {
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
-  const { id, title, location, price, bedrooms, bathrooms, rating, reviewCount, images, featured } = property;
+  const { id, slug, title, location, price, bedrooms, bathrooms, rating, reviewCount, images, featured } = property;
   
-  // Generate slug for SEO-friendly URLs
-  const slug = generateSlug(title);
+  // Use slug from database, fallback to generated slug if not available
+  const urlSlug = slug || generateSlug(title);
   
   return (
-    <Link to={`/property/${slug}`}>
+    <Link to={`/property/${urlSlug}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
         <div className="aspect-[4/3] relative">
           <img 

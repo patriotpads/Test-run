@@ -53,63 +53,23 @@ export function useProperty(slugOrId: string | undefined) {
       
       try {
         const fetchWithTimeout = async () => {
-          // If it's a UUID, fetch directly (for backward compatibility)
-          if (isUuid) {
-            const { data, error } = await Promise.race([
-              supabase
-                .from('properties')
-                .select(`
-                  *,
-                  property_amenities (
-                    amenity_id,
-                    amenities (
-                      id,
-                      name,
-                      icon,
-                      category
-                    )
-                  )
-                `)
-                .eq('id', slugOrId)
-                .maybeSingle(),
-              new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Supabase timeout')), 5000)
-              )
-            ]) as any;
-            
-            return { data, error };
-          }
+          // Create timeout promise
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Supabase timeout')), 5000)
+          );
           
-          // For slugs, fetch all properties and find matching one by slug
-          const { data: allProperties, error } = await Promise.race([
-            supabase
-              .from('properties')
-              .select(`
-                *,
-                property_amenities (
-                  amenity_id,
-                  amenities (
-                    id,
-                    name,
-                    icon,
-                    category
-                  )
-                )
-              `),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Supabase timeout')), 5000)
-            )
+          // Fetch by slug from database (primary method)
+          const query = supabase
+            .from('properties')
+            .select('id, title, slug, location_city, location_state, location_country, price_per_night, bedrooms, bathrooms, max_guests, images, featured, details, property_highlights, status, property_amenities(amenities(id, name, icon, category))')
+            .eq('slug', slugOrId)
+            .maybeSingle();
+          const { data, error } = await Promise.race([
+            query,
+            timeoutPromise
           ]) as any;
           
-          if (error) return { data: null, error };
-          
-          // Find property by matching generated slug
-          const matchingProperty = allProperties?.find((property: any) => {
-            const propertySlug = generateSlug(property.title);
-            return propertySlug === slugOrId;
-          });
-          
-          return { data: matchingProperty, error: null };
+          return { data, error };
         };
 
         const { data, error } = await fetchWithTimeout();

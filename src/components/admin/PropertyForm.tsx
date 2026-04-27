@@ -56,7 +56,7 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
         featured: property.featured || false,
         status: property.status || 'active',
         images: property.images || [],
-        amenities: property.property_amenities?.map((pa: any) => pa.amenity_id) || [],
+        amenities: property.property_amenities?.map((pa: any) => pa.amenities?.id || pa.amenity_id) || [],
       });
     }
   }, [property]);
@@ -67,7 +67,7 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
       console.log('Fetching amenities...');
       const { data, error } = await supabase
         .from('amenities')
-        .select('*')
+        .select('id, name, icon, category')
         .order('category', { ascending: true });
 
       if (error) {

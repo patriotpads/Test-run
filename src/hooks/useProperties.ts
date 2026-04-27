@@ -11,9 +11,20 @@ export function useProperties() {
         const { data, error } = await supabase
           .from('properties')
           .select(`
-            *,
+            id,
+            title,
+            location_city,
+            location_state,
+            location_country,
+            price_per_night,
+            bedrooms,
+            bathrooms,
+            max_guests,
+            images,
+            featured,
+            details,
+            property_highlights,
             property_amenities (
-              amenity_id,
               amenities (
                 id,
                 name,
