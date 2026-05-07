@@ -20,12 +20,11 @@ npm install resend
 6. Click "Edit variables" or "Add variable"
 7. Add the following:
    - **Key**: `RESEND_API_KEY`
-   - **Value**: `re_KuvPyBED_PzVirbBQ68GvGTwboxrq4EcJ`
+   - **Value**: [Your Resend API key from https://resend.com/api-keys]
 8. Click "Save"
 
 **Required:**
-- `RESEND_API_KEY`: Your Resend API key
-  - Your API key: `re_KuvPyBED_PzVirbBQ68GvGTwboxrq4EcJ`
+- `RESEND_API_KEY`: Your Resend API key (get from https://resend.com/api-keys)
 
 **Optional (for Supabase storage):**
 - `SUPABASE_URL`: Your Supabase project URL
