@@ -73,7 +73,7 @@ exports.handler = async (event, context) => {
     // Send email using Resend
     const emailData = {
       from: 'onboarding@resend.dev', // Resend's test domain
-      to: ['hello@radioactivethreads.com'], // Test email address
+      to: ['christina@malibubeachvacations.com'], // Your email address
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
