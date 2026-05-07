@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home } from "lucide-react";
+import ContactForm from './ContactForm';
 
 const Footer: React.FC = () => {
   return (
@@ -50,9 +51,16 @@ const Footer: React.FC = () => {
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
-            <p>
-              <a href="mailto:christina@esellogic.com" className="text-gray-300 hover:text-white underline">christina@esellogic.com</a>
+            <p className="text-gray-300 mb-4">
+              Have questions? Get in touch with us!
             </p>
+            <ContactForm 
+              trigger={
+                <button className="bg-vacation-blue hover:bg-vacation-blue/90 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                  Contact Us
+                </button>
+              }
+            />
           </div>
         </div>
         

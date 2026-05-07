@@ -5,6 +5,11 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Netlify functions configuration
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 
 # Handle SPA routing - redirect all non-file requests to index.html
 [[redirects]]
