@@ -10,6 +10,11 @@ const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
   : null;
 
 exports.handler = async (event, context) => {
+  console.log('Function invoked with method:', event.httpMethod);
+  console.log('Environment variables check:', {
+    RESEND_API_KEY: process.env.RESEND_API_KEY ? 'SET' : 'NOT SET'
+  });
+  
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
@@ -68,7 +73,7 @@ exports.handler = async (event, context) => {
     // Send email using Resend
     const emailData = {
       from: 'send@patriotpads.com', // Your verified domain
-      to: ['christina@malibubeachvacations.com'], // Your email address
+      to: ['hello@radioactivethreads.com'], // Test email address
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -97,7 +102,14 @@ exports.handler = async (event, context) => {
       `,
     };
 
+    console.log('Attempting to send email with data:', {
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject
+    });
+    
     const emailResult = await resend.emails.send(emailData);
+    console.log('Email sent successfully:', emailResult);
 
     // Optionally store in Supabase
     if (supabase) {
