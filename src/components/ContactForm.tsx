@@ -54,6 +54,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ trigger }) => {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     
+    console.log('Contact form submitted with data:', {
+      name: data.get('name'),
+      email: data.get('email'),
+      subject: data.get('subject'),
+      message: data.get('message'),
+      timestamp: new Date().toISOString()
+    });
+    
     // Netlify Forms will handle the submission automatically
     // No custom fetch needed - just let the form submit normally
     toast.success('Message sent successfully! We\'ll get back to you soon.');
