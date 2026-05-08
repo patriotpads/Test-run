@@ -1,8 +1,4 @@
-const { Resend } = require('resend');
 const { createClient } = require('@supabase/supabase-js');
-
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Initialize Supabase (optional)
 const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
@@ -11,9 +7,6 @@ const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
 
 exports.handler = async (event, context) => {
   console.log('Function invoked with method:', event.httpMethod);
-  console.log('Environment variables check:', {
-    RESEND_API_KEY: process.env.RESEND_API_KEY ? 'SET' : 'NOT SET'
-  });
   
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
@@ -70,46 +63,53 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Send email using Resend
+    console.log('Processing contact form submission:', {
+      name,
+      email,
+      subject,
+      timestamp: new Date().toISOString()
+    });
+
+    // Send email using Netlify Forms
     const emailData = {
-      from: 'onboarding@resend.dev', // Resend's test domain
-      to: ['christina@malibubeachvacations.com'], // Your email address
+      to: 'christina@malibubeachvacations.com',
+      from: 'PatriotPads Website <noreply@patriotpads.com>',
       subject: `New Contact Form Submission: ${subject}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px;">
-            New Contact Form Submission
-          </h2>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
-          </div>
-          
-          <div style="margin: 20px 0;">
-            <h3 style="color: #1e3a8a;">Message:</h3>
-            <p style="background-color: #ffffff; padding: 15px; border-left: 4px solid #1e3a8a; white-space: pre-wrap;">
-              ${message}
-            </p>
-          </div>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #666;">
-            <p>This message was sent from the PatriotPads contact form.</p>
-            <p>Sent on: ${new Date().toLocaleString()}</p>
-          </div>
-        </div>
+      text: `
+        New Contact Form Submission
+        
+        Name: ${name}
+        Email: ${email}
+        Subject: ${subject}
+        
+        Message:
+        ${message}
+        
+        ---
+        This message was sent from the PatriotPads contact form.
+        Sent on: ${new Date().toLocaleString()}
       `,
+      replyTo: email,
     };
 
-    console.log('Attempting to send email with data:', {
-      from: emailData.from,
-      to: emailData.to,
-      subject: emailData.subject
+    // Use Netlify's built-in email functionality
+    const response = await fetch('https://api.netlify.com/forms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.NETLIFY_FORMS_TOKEN}`,
+      },
+      body: JSON.stringify({
+        form: 'contact',
+        data: emailData,
+      }),
     });
-    
-    const emailResult = await resend.emails.send(emailData);
-    console.log('Email sent successfully:', emailResult);
+
+    if (!response.ok) {
+      throw new Error('Failed to send email via Netlify Forms');
+    }
+
+    const emailResult = await response.json();
 
     // Optionally store in Supabase
     if (supabase) {
@@ -143,7 +143,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ 
         success: true,
         message: 'Contact form submitted successfully',
-        emailId: emailResult.data?.id
+        netlifyResponse: emailResult
       }),
     };
 
