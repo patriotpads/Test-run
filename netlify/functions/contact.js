@@ -106,7 +106,7 @@ exports.handler = async (event, context) => {
 
     // Send email using Netlify Forms
     const emailData = {
-      to: 'christina@malibubeachvacations.com',
+      to: 'hello@radioactivethreads.com',
       from: 'PatriotPads Website <noreply@patriotpads.com>',
       subject: `New Contact Form Submission: ${subject}`,
       replyTo: email,
