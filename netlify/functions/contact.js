@@ -36,6 +36,18 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Check if event.body exists and is not empty
+    if (!event.body || event.body.trim() === '') {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({ error: 'Request body is empty or missing' }),
+      };
+    }
+
     const { name, email, subject, message } = JSON.parse(event.body);
 
     // Validate required fields
@@ -75,35 +87,27 @@ exports.handler = async (event, context) => {
       to: 'christina@malibubeachvacations.com',
       from: 'PatriotPads Website <noreply@patriotpads.com>',
       subject: `New Contact Form Submission: ${subject}`,
-      text: `
-        New Contact Form Submission
-        
-        Name: ${name}
-        Email: ${email}
-        Subject: ${subject}
-        
-        Message:
-        ${message}
-        
-        ---
-        This message was sent from the PatriotPads contact form.
-        Sent on: ${new Date().toLocaleString()}
-      `,
       replyTo: email,
+      data: {
+        name,
+        email,
+        subject,
+        message,
+        timestamp: new Date().toISOString(),
+      },
     };
 
+    console.log('Sending email via Netlify Forms:', emailData);
+
     // Use Netlify's built-in email functionality
-    const response = await fetch('https://api.netlify.com/api/v1/forms', {
+    const response = await fetch('https://api.netlify.com/api/v1/forms/contact', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.NETLIFY_FORMS_TOKEN}`,
         'Netlify-Site': process.env.NETLIFY_SITE_NAME || 'patriotpads.netlify.app',
       },
-      body: JSON.stringify({
-        form: 'contact',
-        data: emailData,
-      }),
+      body: JSON.stringify(emailData),
     });
 
     if (!response.ok) {
