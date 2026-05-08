@@ -93,11 +93,12 @@ exports.handler = async (event, context) => {
     };
 
     // Use Netlify's built-in email functionality
-    const response = await fetch('https://api.netlify.com/forms', {
+    const response = await fetch('https://api.netlify.com/api/v1/forms', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.NETLIFY_FORMS_TOKEN}`,
+        'Netlify-Site': process.env.NETLIFY_SITE_NAME || 'patriotpads.netlify.app',
       },
       body: JSON.stringify({
         form: 'contact',
@@ -106,10 +107,13 @@ exports.handler = async (event, context) => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to send email via Netlify Forms');
+      const errorData = await response.json();
+      console.error('Netlify Forms API error:', errorData);
+      throw new Error(`Failed to send email: ${errorData.message || 'Unknown error'}`);
     }
 
     const emailResult = await response.json();
+    console.log('Netlify Forms response:', emailResult);
 
     // Optionally store in Supabase
     if (supabase) {
