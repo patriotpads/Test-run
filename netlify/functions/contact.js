@@ -48,7 +48,29 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const { name, email, subject, message } = JSON.parse(event.body);
+    // Log the raw body for debugging
+    console.log('Raw request body:', event.body);
+    
+    let parsedBody;
+    try {
+      parsedBody = JSON.parse(event.body);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Raw body that failed to parse:', event.body);
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: 'Please check your form data'
+        }),
+      };
+    }
+
+    const { name, email, subject, message } = parsedBody;
 
     // Validate required fields
     if (!name || !email || !subject || !message) {

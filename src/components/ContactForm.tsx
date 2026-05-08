@@ -53,28 +53,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ trigger }) => {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-    try {
-      const response = await fetch('/.netlify/functions/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
-      form.reset();
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Contact form error:', error);
-      toast.error('Failed to send message. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    
+    // Netlify Forms will handle the submission automatically
+    // No custom fetch needed - just let the form submit normally
+    toast.success('Message sent successfully! We\'ll get back to you soon.');
+    form.reset();
+    setIsOpen(false);
+    setIsSubmitting(false);
   };
 
   const defaultTrigger = (
