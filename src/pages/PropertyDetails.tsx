@@ -166,10 +166,6 @@ const PropertyDetails = () => {
                     <h3 className="text-lg font-medium mb-2">Property highlights</h3>
                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-6">
                       <li className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        <span>Free cancellation up to 48 hours before check-in</span>
-                      </li>
-                      <li className="flex items-center">
                         <Star className="h-4 w-4 mr-2" />
                         <span>Highly rated for location</span>
                       </li>

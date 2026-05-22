@@ -11,6 +11,9 @@ const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
 
 exports.handler = async (event, context) => {
   console.log('Function invoked with method:', event.httpMethod);
+  console.log('Environment variables check:', {
+    RESEND_API_KEY: process.env.RESEND_API_KEY ? 'SET' : 'NOT SET'
+  });
   
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
@@ -40,41 +43,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Check if event.body exists and is not empty
-    if (!event.body || event.body.trim() === '') {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-        body: JSON.stringify({ error: 'Request body is empty or missing' }),
-      };
-    }
-
-    // Log the raw body for debugging
-    console.log('Raw request body:', event.body);
-    
-    let parsedBody;
-    try {
-      parsedBody = JSON.parse(event.body);
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      console.error('Raw body that failed to parse:', event.body);
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-        body: JSON.stringify({ 
-          error: 'Invalid JSON in request body',
-          details: 'Please check your form data'
-        }),
-      };
-    }
-
-    const { name, email, subject, message } = parsedBody;
+    const { name, email, subject, message } = JSON.parse(event.body);
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
@@ -101,17 +70,10 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log('Processing contact form submission:', {
-      name,
-      email,
-      subject,
-      timestamp: new Date().toISOString()
-    });
-
     // Send email using Resend
     const emailData = {
-      to: 'hello@radioactivethreads.com',
-      from: 'PatriotPads Website <noreply@patriotpads.com>',
+      from: 'onboarding@resend.dev', // Resend's test domain
+      to: ['hello@radioactivethreads.com'], // Test email address
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -140,8 +102,12 @@ exports.handler = async (event, context) => {
       `,
     };
 
-    console.log('Sending email via Resend:', emailData);
-
+    console.log('Attempting to send email with data:', {
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject
+    });
+    
     const emailResult = await resend.emails.send(emailData);
     console.log('Email sent successfully:', emailResult);
 
@@ -177,7 +143,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ 
         success: true,
         message: 'Contact form submitted successfully',
-        netlifyResponse: emailResult
+        emailId: emailResult.data?.id
       }),
     };
 
