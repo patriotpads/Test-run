@@ -19,7 +19,7 @@ export function ImageUploader({ images, onChange, maxImages = 10 }: ImageUploade
   const uploadImage = async (file: File) => {
     try {
       setUploading(true);
-      console.log('Starting image upload:', file.name);
+      console.log('Starting image upload:', file.name, 'Type:', file.type, 'Size:', file.size);
       
       // Check if user is authenticated
       if (!isAuthenticated || !user) {
@@ -30,6 +30,17 @@ export function ImageUploader({ images, onChange, maxImages = 10 }: ImageUploade
           variant: 'destructive',
         });
         throw new Error('You must be logged in to upload images');
+      }
+      
+      // Reject HEIC files (incompatible with web browsers)
+      if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+        console.error('HEIC file rejected:', file.name);
+        toast({
+          title: 'Unsupported File Format',
+          description: 'HEIC/HEIF files are not supported. Please convert to JPEG or PNG first.',
+          variant: 'destructive',
+        });
+        return null;
       }
       
       const fileExt = file.name.split('.').pop();
@@ -51,7 +62,7 @@ export function ImageUploader({ images, onChange, maxImages = 10 }: ImageUploade
         .from('property-images')
         .getPublicUrl(filePath);
 
-      console.log('Image uploaded successfully:', data.publicUrl);
+      console.log('Image uploaded successfully:', data.publicUrl, 'Original file:', file.name, 'Type:', file.type);
       return data.publicUrl;
     } catch (error: any) {
       console.error('Image upload failed:', error);
@@ -85,8 +96,18 @@ export function ImageUploader({ images, onChange, maxImages = 10 }: ImageUploade
     const uploadedUrls = await Promise.all(uploadPromises);
     const validUrls = uploadedUrls.filter(url => url !== null) as string[];
     
+    console.log('Upload results:', {
+      totalFiles: files.length,
+      successfulUploads: validUrls.length,
+      failedUploads: uploadedUrls.filter(url => url === null).length,
+      newUrls: validUrls,
+      existingImagesCount: images.length,
+    });
+    
     if (validUrls.length > 0) {
-      onChange([...images, ...validUrls]);
+      const newImages = [...images, ...validUrls];
+      console.log('Updated image array:', newImages);
+      onChange(newImages);
       toast({
         title: 'Upload successful',
         description: `${validUrls.length} image(s) uploaded successfully.`,
@@ -142,16 +163,48 @@ export function ImageUploader({ images, onChange, maxImages = 10 }: ImageUploade
     onChange(newImages);
   };
 
+  const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
+  const [imageLoadingStates, setImageLoadingStates] = useState<Set<number>>(new Set());
+
+  const handleImageError = (index: number) => {
+    console.error('Image failed to load:', images[index], 'at index:', index);
+    setImageLoadErrors(prev => new Set(prev).add(index));
+  };
+
+  const handleImageLoad = (index: number) => {
+    setImageLoadingStates(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {images.map((image, index) => (
-          <div key={index} className="relative group">
-            <img
-              src={image}
-              alt={`Property image ${index + 1}`}
-              className="w-full h-24 object-cover rounded-lg border"
-            />
+          <div key={image} className="relative group">
+            {imageLoadErrors.has(index) ? (
+              <div className="w-full h-24 bg-gray-100 rounded-lg border flex items-center justify-center">
+                <span className="text-xs text-gray-500 text-center px-2">Failed to load</span>
+              </div>
+            ) : (
+              <>
+                {imageLoadingStates.has(index) && (
+                  <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center z-10">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vacation-blue"></div>
+                  </div>
+                )}
+                <img
+                  src={image}
+                  alt={`Property image ${index + 1}`}
+                  className="w-full h-24 object-cover rounded-lg border"
+                  onError={() => handleImageError(index)}
+                  onLoad={() => handleImageLoad(index)}
+                  loading="lazy"
+                />
+              </>
+            )}
             <button
               type="button"
               onClick={() => removeImage(index)}
@@ -167,7 +220,7 @@ export function ImageUploader({ images, onChange, maxImages = 10 }: ImageUploade
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleFileSelect}
               className="hidden"
               disabled={uploading || !isAuthenticated}

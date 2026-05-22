@@ -45,8 +45,8 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {destinations.map((destination, index) => (
-                <Card key={index} className="overflow-hidden">
+              {destinations.map((destination) => (
+                <Card key={destination.name} className="overflow-hidden">
                   <div className="aspect-[3/2] relative">
                     <img 
                       src={destination.image} 

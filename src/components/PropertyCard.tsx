@@ -39,6 +39,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             src={images[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format'} 
             alt={title}
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              console.error('PropertyCard image failed to load:', images[0], 'for property:', title);
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format';
+            }}
+            loading="lazy"
           />
           {featured && (
             <Badge className="absolute top-2 right-2 bg-vacation-orange">

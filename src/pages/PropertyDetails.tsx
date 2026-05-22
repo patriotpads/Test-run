@@ -120,11 +120,16 @@ const PropertyDetails = () => {
           {/* Property Images */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {property.images.map((image: string, index: number) => (
-              <div key={index} className={`aspect-[4/3] overflow-hidden rounded-lg ${index === 0 ? 'md:col-span-2' : ''}`}>
+              <div key={image} className={`aspect-[4/3] overflow-hidden rounded-lg ${index === 0 ? 'md:col-span-2' : ''}`}>
                 <img 
                   src={image} 
                   alt={`${property.title} - image ${index + 1}`}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error('Property image failed to load:', image, 'for property:', property.title);
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format';
+                  }}
+                  loading="lazy"
                 />
               </div>
             ))}
@@ -175,8 +180,8 @@ const PropertyDetails = () => {
                 <TabsContent value="amenities" className="pt-4">
                   <h3 className="text-lg font-medium mb-4">What this place offers</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {property.amenities.map((amenity: any, index: number) => (
-                      <div key={index} className="flex items-center py-2">
+                    {property.amenities.map((amenity: any) => (
+                      <div key={amenity?.id || amenity?.name} className="flex items-center py-2">
                         <span>{amenity?.name || ''}</span>
                       </div>
                     ))}

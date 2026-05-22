@@ -253,6 +253,13 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
 
   const handleChange = (field: string, value: any) => {
     console.log(`Field ${field} changed to:`, value);
+    if (field === 'images') {
+      console.log('Image array state change:', {
+        previousLength: formData.images.length,
+        newLength: value.length,
+        newImages: value,
+      });
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
