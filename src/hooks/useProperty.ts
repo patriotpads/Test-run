@@ -58,18 +58,61 @@ export function useProperty(slugOrId: string | undefined) {
             setTimeout(() => reject(new Error('Supabase timeout')), 5000)
           );
           
-          // Fetch by slug from database (primary method)
-          const query = supabase
+          let data, error;
+          
+          // Try fetching by slug first (primary method)
+          if (!isUuid) {
+            console.log('Attempting to fetch property by slug:', slugOrId);
+            const slugQuery = supabase
+              .from('properties')
+              .select('id, title, slug, location_city, location_state, location_country, price_per_night, bedrooms, bathrooms, max_guests, images, featured, details, property_highlights, status, property_amenities(amenities(id, name, icon, category))')
+              .eq('slug', slugOrId)
+              .maybeSingle();
+            
+            const slugResult = await Promise.race([slugQuery, timeoutPromise]) as any;
+            
+            if (!slugResult.error && slugResult.data) {
+              console.log('Found property by slug:', slugResult.data.title);
+              return slugResult;
+            }
+            
+            console.log('Slug lookup failed, trying title search as fallback');
+          }
+          
+          // Fallback: Try searching by title if slug lookup failed
+          console.log('Attempting to fetch property by title search:', slugOrId);
+          const titleQuery = supabase
             .from('properties')
             .select('id, title, slug, location_city, location_state, location_country, price_per_night, bedrooms, bathrooms, max_guests, images, featured, details, property_highlights, status, property_amenities(amenities(id, name, icon, category))')
-            .eq('slug', slugOrId)
-            .maybeSingle();
-          const { data, error } = await Promise.race([
-            query,
-            timeoutPromise
-          ]) as any;
+          .ilike('title', slugOrId.replace(/-/g, ' '))
+          .maybeSingle();
           
-          return { data, error };
+          const titleResult = await Promise.race([titleQuery, timeoutPromise]) as any;
+          
+          if (!titleResult.error && titleResult.data) {
+            console.log('Found property by title search:', titleResult.data.title, 'with slug:', titleResult.data.slug);
+            return titleResult;
+          }
+          
+          // If UUID, try fetching by ID directly
+          if (isUuid) {
+            console.log('Attempting to fetch property by UUID:', slugOrId);
+            const idQuery = supabase
+              .from('properties')
+              .select('id, title, slug, location_city, location_state, location_country, price_per_night, bedrooms, bathrooms, max_guests, images, featured, details, property_highlights, status, property_amenities(amenities(id, name, icon, category))')
+              .eq('id', slugOrId)
+              .maybeSingle();
+            
+            const idResult = await Promise.race([idQuery, timeoutPromise]) as any;
+            
+            if (!idResult.error && idResult.data) {
+              console.log('Found property by UUID:', idResult.data.title);
+              return idResult;
+            }
+          }
+          
+          // All lookups failed
+          return { data: null, error: new Error('Property not found in database') };
         };
 
         const { data, error } = await fetchWithTimeout();
@@ -79,7 +122,9 @@ export function useProperty(slugOrId: string | undefined) {
           throw new Error('Property not found in database');
         }
 
-        const propertySlug = generateSlug(data.title);
+        // Use the slug from database if available, otherwise generate it
+        const propertySlug = data.slug || generateSlug(data.title);
+        console.log('Property slug:', propertySlug, '(from database:', !!data.slug, ')');
         
         return {
           id: data.id,

@@ -102,7 +102,7 @@ export function PropertyForm({ property, onClose, onSuccess }: PropertyFormProps
           .not('slug', 'is', null);
         
         const existingSlugs = existingProperties?.map(p => p.slug).filter(Boolean) || [];
-        slug = generateUniqueSlug(baseSlug, existingSlugs, 'new');
+        slug = generateUniqueSlug(baseSlug, existingSlugs); // Don't pass 'new' as propertyId
         
         console.log(`Generated slug: ${slug} for title: ${data.title}`);
       }

@@ -10,14 +10,13 @@
 export function generateSlug(title: string): string {
   if (!title) return '';
   
-  // Take first two words of the title
+  // Take all words of the title (not just first two) for better uniqueness
   const words = title.trim().split(/\s+/).filter(word => word.length > 0);
-  const firstTwoWords = words.slice(0, 2);
   
-  if (firstTwoWords.length === 0) return '';
+  if (words.length === 0) return '';
   
   // Convert to lowercase and replace spaces with hyphens
-  let slug = firstTwoWords
+  let slug = words
     .join('-')
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
@@ -31,6 +30,11 @@ export function generateSlug(title: string): string {
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '')
       .substring(0, 10);
+  }
+  
+  // Truncate if too long (max 100 chars for URL safety)
+  if (slug.length > 100) {
+    slug = slug.substring(0, 100).replace(/-[^-]*$/, '');
   }
   
   return slug;
@@ -56,22 +60,26 @@ export function generateUniqueSlug(baseSlug: string, existingSlugs: string[], pr
   let slug = baseSlug;
   
   if (existingSlugs.includes(slug)) {
-    // Prefer using property ID if available, otherwise use random string
-    if (propertyId !== undefined && propertyId !== null) {
-      slug = `${baseSlug}-${propertyId}`;
-    } else {
-      slug = `${baseSlug}-${generateRandomString(4)}`;
+    // Always use random string for uniqueness (propertyId might not be available for new properties)
+    let attempts = 0;
+    while (existingSlugs.includes(slug) && attempts < 100) {
+      const randomSuffix = generateRandomString(6);
+      slug = `${baseSlug}-${randomSuffix}`;
+      attempts++;
     }
     
-    // If still conflicts (very unlikely), try random string
+    // If still conflicts after 100 attempts (extremely rare), use timestamp
     if (existingSlugs.includes(slug)) {
-      let attempts = 0;
-      while (existingSlugs.includes(slug) && attempts < 10) {
-        slug = `${baseSlug}-${generateRandomString(6)}`;
-        attempts++;
-      }
+      slug = `${baseSlug}-${Date.now()}`;
     }
   }
+  
+  console.log('Generated unique slug:', {
+    baseSlug,
+    finalSlug: slug,
+    existingSlugs,
+    wasCollision: existingSlugs.includes(baseSlug),
+  });
   
   return slug;
 }

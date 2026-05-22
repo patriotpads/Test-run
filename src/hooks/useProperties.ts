@@ -13,6 +13,7 @@ export function useProperties() {
           .select(`
             id,
             title,
+            slug,
             location_city,
             location_state,
             location_country,
@@ -40,6 +41,7 @@ export function useProperties() {
         
         return data.map(property => ({
           id: property.id,
+          slug: property.slug,
           title: property.title,
           location: {
             city: property.location_city,
